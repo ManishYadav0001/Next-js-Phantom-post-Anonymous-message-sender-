@@ -1,25 +1,27 @@
 "use client";
 
-
-import { LoginSchema } from "@/Schemas/LogInSchema";
+import { VerificationCodeSchema } from "@/Schemas/VerificationCodeSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import Link from "next/link";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useParams } from "next/navigation";
+import { toast } from "sonner"
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export default function LoginPage() {
+
+export default function verificationPage() {
+
 
     useEffect(() => {
 
         async function checkAuth() {
-            const res = await axios.get("/api/checkAuth")
-
-            if (res.data.success) {
-                router.push("/dashboard")
+            const res = await axios.get("/api/protectVerifyRoute")
+            if (!res.data.success) {
+                router.push("/signup")
             }
+
 
 
         }
@@ -28,33 +30,47 @@ export default function LoginPage() {
 
     }, [])
 
+
+    const params = useParams();
     const router = useRouter();
-    const [error, setError] = useState("")
+
+    const { name } = params;
+
     const { register, handleSubmit, formState: { errors } } = useForm(
         {
-            resolver: zodResolver(LoginSchema)
+            resolver: zodResolver(VerificationCodeSchema)
         }
     )
 
     const onSubmit = async (data) => {
 
-        const { email, password } = data;
-
-
-
         try {
 
-            const res = await axios.post("/api/login", { email, password })
+            const verifyCode = data.verifyCode;
+
+            const res = await axios.post("/api/verify-user", { verifyCode, name })
 
             if (!res.data.success) {
-                setError(res.data.message)
+                toast.error(res.data.message)
+
+                return;
             }
 
-            router.push("/dashboard")
+
+
+           await axios.post("/api/Expire-verification")
+
+            
+
+                router.push("/dashboard")
+
+            
+
+
 
 
         } catch (error) {
-            console.log("login error ", error)
+            console.log("user-verification error", error)
         }
     }
 
@@ -73,60 +89,44 @@ export default function LoginPage() {
             {/* Signup Card */}
             <div className="backdrop-blur-md bg-white/10 border border-white/20 p-10 rounded-2xl w-[90%] max-w-md text-center shadow-xl">
                 <h1 className="text-3xl font-semibold mb-2 tracking-wide">
-                    Login to your Account
+                    User Verification
                 </h1>
                 <p className="text-gray-400 text-sm mb-8">
-                    Login to PhantomPost and start sending anonymous messages
+                    please verify your account before moving forward
                 </p>
                 <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 text-left">
-
-
                     <div>
-                        <label className="block text-sm text-gray-300 mb-1">Email</label>
+                        <label className="block text-sm text-gray-300 mb-1">verification code</label>
                         <input
-                            {...register("email")}
-                            type="email"
-                            placeholder="you@example.com"
+                            {...register("verifyCode")}
+                            type="text"
+                            placeholder="code"
                             className="w-full p-3 rounded-lg bg-transparent border border-white/30 placeholder-gray-500 focus:outline-none focus:border-white transition"
                             required
                         />
-                        {error && (
-                            <p className="text-red-400 text-sm mt-1">{error}</p>
+                        {errors.verifyCode && (
+                            <p className="text-red-400 text-sm mt-1">{errors.verifyCode.message}</p>
                         )}
-                        {errors.email && (
-                            <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
-                        )}
+
                     </div>
 
-                    <div>
-                        <label className="block text-sm text-gray-300 mb-1">Password</label>
-                        <input
-                            {...register("password")}
-                            type="password"
-                            placeholder="••••••••"
-                            className="w-full p-3 rounded-lg bg-transparent border border-white/30 placeholder-gray-500 focus:outline-none focus:border-white transition"
-                            required
-                        />
-                        {errors.password && (
-                            <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
-                        )}
-                    </div>
+
 
                     <button
                         type="submit"
                         className="mt-4 p-3 rounded-lg bg-white text-black font-medium hover:bg-gray-200 transition"
                     >
-                        Login
+                        Sign Up
                     </button>
 
                 </form>
                 <p className="text-gray-400 text-sm mt-6">
-                    don't have an account?{" "}
+                    Back to sign up{" "}
                     <Link
                         href="/signup"
                         className="text-white underline underline-offset-4 hover:text-gray-300"
                     >
-                        signup
+                        Verify your Account
                     </Link>
                 </p>
             </div>
