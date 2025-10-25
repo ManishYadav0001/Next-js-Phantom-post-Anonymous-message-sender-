@@ -1,4 +1,29 @@
+"use client"
+
+import Link from "next/link";
+import axios from "axios";
+import { useState } from "react";
+import { useEffect } from "react";
 export default function Hero() {
+  const [isLogin, setIsLogin] = useState(false)
+
+
+  useEffect(() => {
+
+    async function checkAuth() {
+      const res = await axios.get("/api/checkAuth")
+
+      if (res.data.success) {
+        setIsLogin(true)
+      }
+
+
+    }
+    checkAuth();
+
+  }, [])
+
+
   return (
     <section
       className="flex flex-col items-center justify-center text-center grow px-6"
@@ -18,17 +43,17 @@ export default function Hero() {
         </p>
         <div className="mt-8 flex justify-center gap-4">
           <a
-            href="/signup"
+            href={isLogin?"/dashboard":"/signup"}
             className="px-6 py-2 rounded-full border border-white/40 hover:bg-white hover:text-black transition-all"
           >
             Get Started
           </a>
-          <a
+          {isLogin ? "" : (<a
             href="/login"
             className="px-6 py-2 rounded-full border border-white/20 hover:border-white/60 transition-all"
           >
             Login
-          </a>
+          </a>)}
         </div>
       </div>
     </section>

@@ -46,7 +46,8 @@ export default function Navbar() {
         <nav className="flex items-center justify-between px-8 py-5 backdrop-blur-sm ">
 
             <h1 className="text-2xl font-semibold tracking-wide">
-                Phantom<span className="text-gray-400">Post</span>
+                <a href="/">
+                    Phantom<span className="text-gray-400">Post</span></a>
             </h1>
 
 
